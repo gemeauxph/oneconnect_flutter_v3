@@ -1,0 +1,31 @@
+name: oneconnect_flutter
+description: A plugin that allows you to use OneConnect with Flutter
+version: 1.0.3
+homepage: https://oneconnect.top
+
+environment:
+  sdk: ">=2.15.0 <4.0.0"
+  flutter: ">=2.5.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  package_info_plus: ^4.2.0
+  http: ^1.1.2
+  url_launcher: ^6.2.1
+  shared_preferences: ^2.2.2
+
+dev_dependencies:
+  flutter_lints: ^3.0.1
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: top.oneconnect.oneconnect_flutter
+        pluginClass: OpenVPNFlutterPlugin
+      ios:
+        pluginClass: OpenVPNFlutterPlugin
+

@@ -350,10 +350,10 @@ class OpenVPN {
 
     String packageName = (await PackageInfo.fromPlatform()).packageName;
 
-    final url = Uri.parse('https://flutter.oneconnect.top/view/front/controller.php');
+    final url = Uri.parse('https://developer.oneconnect.top/view/front/controller.php');
     final Map<String, String> formFields = {
-      'package_name': "com.svpn.app",
-      'api_key': "3o4ExGE80r69iC5hyWmjigryeLZKxelLCzC4C7SJDn.7q2lBNF",
+      'package_name': packageName,
+      'api_key': apiKey,
       'action': 'fetchUserServers',
       'type': (serverType == OneConnect.pro) ? "pro" : "free",
     };
@@ -364,18 +364,13 @@ class OpenVPN {
         body: formFields, // Send the parameters as form fields
       );
 
-      print('CHECKTEST: start');
-
       if (response.statusCode == 200) {
-        print('CHECKTEST: ${response.body}');
         final List<dynamic> jsonData = json.decode(response.body);
         return jsonData.map((data) => VpnServer.fromJson(data)).toList();
       } else {
-        print('CHECKTEST Error: ${response.statusCode}');
         return [];
       }
     } catch (e) {
-      print('CHECKTEST Exception: $e');
       return [];
     }
   }
@@ -537,7 +532,7 @@ class OpenVPN {
 
     try {
       final response = await http.post(
-        Uri.parse('https://flutter.oneconnect.top/view/front/controller.php'),
+        Uri.parse('https://developer.oneconnect.top/view/front/controller.php'),
         body: {
           'action': 'popUpSettings',
           'package_name': packageName,

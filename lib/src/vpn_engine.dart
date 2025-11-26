@@ -94,9 +94,10 @@ class OpenVPN {
 
   Future<void> initializeOneConnect(BuildContext context, String apiKey) async {
     this.apiKey = apiKey;
-
+    print("CHECKPOPUP start");
     //Navigator.push(context, MaterialPageRoute(builder: (context) => OneConnectPopup()));
     Timer(const Duration(seconds: 8), () {
+      print("CHECKPOPUP 8 seconds");
       fetchPopupData(context);
     });
   }
@@ -539,8 +540,6 @@ class OpenVPN {
           'api_key': "3o4ExGE80r69iC5hyWmjigryeLZKxelLCzC4C7SJDn.7q2lBNF"
         },
       );
-
-      print("CHECKPOPUP ${response.body}");
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);

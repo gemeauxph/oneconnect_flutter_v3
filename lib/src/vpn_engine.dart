@@ -352,7 +352,7 @@ class OpenVPN {
 
     final url = Uri.parse('https://developer.oneconnect.top/view/front/controller.php');
     final Map<String, String> formFields = {
-      'package_name': "com.svpn.app",
+      'package_name': packageName,
       'api_key': apiKey,
       'action': 'fetchUserServers',
       'type': (serverType == OneConnect.pro) ? "pro" : "free",
@@ -535,7 +535,7 @@ class OpenVPN {
         Uri.parse('https://developer.oneconnect.top/view/front/controller.php'),
         body: {
           'action': 'popUpSettings',
-          'package_name': "com.svpn.app",
+          'package_name': packageName,
           'api_key': apiKey
         },
       );

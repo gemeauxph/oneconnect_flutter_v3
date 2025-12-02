@@ -565,7 +565,7 @@ class OpenVPN {
 
         bool popupStatus = await showPopup(frequency, action);
 
-        //print("CHECKACTIVE $noPopup");
+        print("CHECKACTIVE ${response.body}");
 
         if (active == 1 && popupStatus && noPopup == 0) {
           _showCustomPopup(context);

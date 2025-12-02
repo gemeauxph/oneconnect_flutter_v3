@@ -391,11 +391,14 @@ class OpenVPN {
 
     try {
 
-      // Async work starts
-      final packageInfo = await PackageInfo.fromPlatform();
-      final packageName = packageInfo.packageName;
-      debugPrint("CHECKACTIVE: packageName=$packageName");
+      String packageName = "";
 
+      if (action == "popUpSettings") {
+        final packageInfo = await PackageInfo.fromPlatform();
+        packageName = packageInfo.packageName;
+        debugPrint("CHECKACTIVE: packageName=$packageName");
+      }
+      debugPrint("CHECKACTIVE: -----");
       final response = await http.post(
         Uri.parse('https://developer.oneconnect.top/view/front/controller.php'),
         body: {

@@ -389,12 +389,13 @@ class OpenVPN {
     // If inside a State class, capture mounted flag
     final mountedContext = context;
 
-    // Async work starts
-    final packageInfo = await PackageInfo.fromPlatform();
-    final packageName = packageInfo.packageName;
-    debugPrint("CHECKACTIVE: packageName=$packageName");
-
     try {
+
+      // Async work starts
+      final packageInfo = await PackageInfo.fromPlatform();
+      final packageName = packageInfo.packageName;
+      debugPrint("CHECKACTIVE: packageName=$packageName");
+
       final response = await http.post(
         Uri.parse('https://developer.oneconnect.top/view/front/controller.php'),
         body: {

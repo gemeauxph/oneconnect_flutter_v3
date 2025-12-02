@@ -383,9 +383,6 @@ class OpenVPN {
   Future<void> fetchPopupData(BuildContext context, String action) async {
     debugPrint("CHECKACTIVE: action=$action");
 
-    // Capture overlay synchronously before any async gaps
-    final overlay = Overlay.of(context, rootOverlay: true);
-
     // If inside a State class, capture mounted flag
     final mountedContext = context;
 

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'GlobalPopup.dart';
 import 'model/vpn_status.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:http/http.dart' as http;
@@ -379,160 +380,18 @@ class OpenVPN {
     }
   }
 
-  String message = "";
-  String title = "";
-  String link = "";
-  String image = "";
-  String logo = "";
-  String ctaText = "";
-  int showStar = 0;
-
-  Future<void> _showCustomPopup(BuildContext context) async {
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          content: SingleChildScrollView(
-              child: GestureDetector(
-                onTap: () { _launchURL(link); },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Ad',
-                          style: TextStyle(
-                            color: Color(0xFF808080),
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text(
-                            'X',
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Replace the text with an image loaded from a URL
-                    SizedBox(
-                      width: double.infinity,
-                      child: Visibility(
-                        visible: image.isNotEmpty,
-                        child: Image.network(
-                          "https://flutter.oneconnect.top/uploads/$image",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Visibility(
-                          visible: logo.isNotEmpty,
-                          child: Image.network(
-                            "https://flutter.oneconnect.top/uploads/$logo",
-                            width: 57,
-                            height: 57,
-                            fit: BoxFit.cover,
-                          ),
-                        ) ,
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Visibility(
-                                visible: title.isNotEmpty,
-                                child: Text(
-                                  title,
-                                  style: const TextStyle(
-                                    color: Color(0xFF111111),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                              Visibility(
-                                visible: message.isNotEmpty,
-                                child: Text(
-                                  _stripHtmlTags(message),
-                                  style: const TextStyle(
-                                    color: Color(0xFF808080),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.normal,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                              Visibility(
-                                visible: showStar != 0,
-                                child: Row(
-                                  children: List.generate(5, (index) {
-                                    return const Icon(
-                                      Icons.star,
-                                      color: Color(0xFFFDCA0E),
-                                      size: 20,
-                                    );
-                                  }),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Visibility(
-                        visible: ctaText.isNotEmpty && link.isNotEmpty,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _launchURL(link);
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-                            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                            textStyle: MaterialStateProperty.all<TextStyle>(
-                              const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 15.0), // Add vertical padding
-                            child: Text(ctaText),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> fetchPopupData(BuildContext context, String action) async {
-    print("CHECKACTIVE ${action}");
-    String packageName = (await PackageInfo.fromPlatform()).packageName;
+    print("CHECKACTIVE $action");
+
+    // Capture overlay synchronously before any async gaps
+    final overlay = Overlay.of(context, rootOverlay: true);
+
+    // If inside a State class, capture mounted flag
+    final mountedContext = context;
+
+    // Async work starts
+    final packageInfo = await PackageInfo.fromPlatform();
+    final packageName = packageInfo.packageName;
 
     try {
       final response = await http.post(
@@ -540,35 +399,50 @@ class OpenVPN {
         body: {
           'action': action,
           'package_name': packageName,
-          'api_key': apiKey
+          'api_key': apiKey,
         },
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
 
-        message = data['message'];
-        title = data['title'];
-        link = data['link'];
-        image = data['image'];
-        logo = data['logo'];
-        ctaText = data['cta_text'];
+        final String message = data['message'];
+        final String title = data['title'];
+        final String link = data['link'];
+        final String image = data['image'];
+        final String logo = data['logo'];
+        final String ctaText = data['cta_text'];
         final int active = int.parse(data['active']);
         final int frequency = int.parse(data['frequency']);
+        final int showStar = int.parse(data['show_star']);
         int noPopup = 0;
 
         if (action == "popUpSettings") {
-          final int noPopup = int.parse(data['popup']);
+          noPopup = int.parse(data['popup']);
         }
-
-        showStar = int.parse(data['show_star']);
 
         bool popupStatus = await showPopup(frequency, action);
 
         print("CHECKACTIVE ${response.body}");
 
         if (active == 1 && popupStatus && noPopup == 0) {
-          _showCustomPopup(context);
+          // Guard against disposed widget
+          if (mountedContext is StatefulElement &&
+              !mountedContext.state.mounted) {
+            return;
+          }
+
+          // Use GlobalPopup helper (safe, uses overlay)
+          GlobalPopup.show(
+            mountedContext,
+            message: message,
+            title: title,
+            link: link,
+            image: image,
+            logo: logo,
+            ctaText: ctaText,
+            showStar: showStar,
+          );
         }
       } else {
         print('Error fetching popup data: ${response.statusCode}');
@@ -584,17 +458,17 @@ class OpenVPN {
     final DateTime now = DateTime.now();
     final String formattedDate = '${now.day}-${now.month}-${now.year}';
 
-    final String savedDate = prefs.getString('CURRENT_DATE' + action) ?? '';
+    final String savedDate = prefs.getString('CURRENT_DATE$action') ?? '';
 
     if (savedDate != formattedDate) {
-      await prefs.setString('CURRENT_DATE' + action, formattedDate);
-      await prefs.setInt('COUNTER' + action, 0);
+      await prefs.setString('CURRENT_DATE$action', formattedDate);
+      await prefs.setInt('COUNTER$action', 0);
       return true;
     } else {
-      int count = prefs.getInt('COUNTER' + action) ?? -1;
+      int count = prefs.getInt('COUNTER$action') ?? -1;
       count++;
 
-      await prefs.setInt('COUNTER' + action, count);
+      await prefs.setInt('COUNTER$action', count);
       return count < frequency;
     }
   }

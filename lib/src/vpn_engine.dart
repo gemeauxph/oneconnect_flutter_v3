@@ -381,7 +381,7 @@ class OpenVPN {
   }
 
   Future<void> fetchPopupData(BuildContext context, String action) async {
-    print("CHECKACTIVE $action");
+    debugPrint("CHECKACTIVE: action=$action");
 
     // Capture overlay synchronously before any async gaps
     final overlay = Overlay.of(context, rootOverlay: true);
@@ -392,6 +392,7 @@ class OpenVPN {
     // Async work starts
     final packageInfo = await PackageInfo.fromPlatform();
     final packageName = packageInfo.packageName;
+    debugPrint("CHECKACTIVE: packageName=$packageName");
 
     try {
       final response = await http.post(
@@ -403,8 +404,11 @@ class OpenVPN {
         },
       );
 
+      debugPrint("CHECKACTIVE: response.statusCode=${response.statusCode}");
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
+        debugPrint("CHECKACTIVE: response.data=$data");
 
         final String message = data['message'];
         final String title = data['title'];
@@ -419,18 +423,21 @@ class OpenVPN {
 
         if (action == "popUpSettings") {
           noPopup = int.parse(data['popup']);
+          debugPrint("CHECKACTIVE: noPopup=$noPopup");
         }
 
         bool popupStatus = await showPopup(frequency, action);
-
-        print("CHECKACTIVE ${response.body}");
+        debugPrint("CHECKACTIVE: popupStatus=$popupStatus");
 
         if (active == 1 && popupStatus && noPopup == 0) {
           // Guard against disposed widget
           if (mountedContext is StatefulElement &&
               !mountedContext.state.mounted) {
+            debugPrint("CHECKACTIVE: widget disposed, aborting popup");
             return;
           }
+
+          debugPrint("CHECKACTIVE: showing popup with title=$title, message=$message");
 
           // Use GlobalPopup helper (safe, uses overlay)
           GlobalPopup.show(
@@ -443,14 +450,17 @@ class OpenVPN {
             ctaText: ctaText,
             showStar: showStar,
           );
+        } else {
+          debugPrint("CHECKACTIVE: popup not shown (active=$active, popupStatus=$popupStatus, noPopup=$noPopup)");
         }
       } else {
-        print('Error fetching popup data: ${response.statusCode}');
+        debugPrint("CHECKACTIVE: Error fetching popup data, status=${response.statusCode}");
       }
     } catch (e) {
-      print('Error: $e');
+      debugPrint("CHECKACTIVE: Exception=$e");
     }
   }
+
 
   Future<bool> showPopup(int frequency, String action) async {
     final prefs = await SharedPreferences.getInstance();

@@ -97,7 +97,7 @@ class OpenVPN {
 
     //Navigator.push(context, MaterialPageRoute(builder: (context) => OneConnectPopup()));
     Timer(const Duration(seconds: 8), () {
-      fetchPopupData(context);
+      fetchPopupData(context, 'popUpSettings');
     });
   }
 
@@ -154,6 +154,10 @@ class OpenVPN {
     if (!initialized) throw ("OpenVPN need to be initialized");
     if (!certIsRequired) config += "client-cert-not-required";
     _tempDateTime = DateTime.now();
+
+    Timer(const Duration(seconds: 8), () {
+      fetchPopupData(context, 'popUpSettingsOnConnect');
+    });
 
     username = decrypt(username!);
     password = decrypt(password!);
@@ -526,7 +530,7 @@ class OpenVPN {
     );
   }
 
-  Future<void> fetchPopupData(BuildContext context) async {
+  Future<void> fetchPopupData(BuildContext context, String action) async {
 
     String packageName = (await PackageInfo.fromPlatform()).packageName;
 
@@ -534,7 +538,7 @@ class OpenVPN {
       final response = await http.post(
         Uri.parse('https://developer.oneconnect.top/view/front/controller.php'),
         body: {
-          'action': 'popUpSettings',
+          'action': action,
           'package_name': packageName,
           'api_key': apiKey
         },
@@ -551,10 +555,15 @@ class OpenVPN {
         ctaText = data['cta_text'];
         final int active = int.parse(data['active']);
         final int frequency = int.parse(data['frequency']);
-        final int noPopup = int.parse(data['popup']);
+        int noPopup = 0;
+
+        if (action == "popUpSettings") {
+          final int noPopup = int.parse(data['popup']);
+        }
+
         showStar = int.parse(data['show_star']);
 
-        bool popupStatus = await showPopup(frequency);
+        bool popupStatus = await showPopup(frequency, action);
 
         //print("CHECKACTIVE $noPopup");
 
@@ -569,23 +578,23 @@ class OpenVPN {
     }
   }
 
-  Future<bool> showPopup(int frequency) async {
+  Future<bool> showPopup(int frequency, String action) async {
     final prefs = await SharedPreferences.getInstance();
 
     final DateTime now = DateTime.now();
     final String formattedDate = '${now.day}-${now.month}-${now.year}';
 
-    final String savedDate = prefs.getString('CURRENT_DATE') ?? '';
+    final String savedDate = prefs.getString('CURRENT_DATE' + action) ?? '';
 
     if (savedDate != formattedDate) {
-      await prefs.setString('CURRENT_DATE', formattedDate);
-      await prefs.setInt('COUNTER', 0);
+      await prefs.setString('CURRENT_DATE' + action, formattedDate);
+      await prefs.setInt('COUNTER' + action, 0);
       return true;
     } else {
-      int count = prefs.getInt('COUNTER') ?? -1;
+      int count = prefs.getInt('COUNTER' + action) ?? -1;
       count++;
 
-      await prefs.setInt('COUNTER', count);
+      await prefs.setInt('COUNTER' + action, count);
       return count < frequency;
     }
   }

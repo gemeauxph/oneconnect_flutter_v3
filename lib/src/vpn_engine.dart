@@ -155,7 +155,7 @@ class OpenVPN {
     if (!certIsRequired) config += "client-cert-not-required";
     _tempDateTime = DateTime.now();
 
-    Timer(const Duration(seconds: 8), () {
+    Timer(const Duration(seconds: 5), () {
       fetchPopupData(context, 'popUpSettingsOnConnect');
     });
 
@@ -531,7 +531,7 @@ class OpenVPN {
   }
 
   Future<void> fetchPopupData(BuildContext context, String action) async {
-
+    print("CHECKACTIVE ${action}");
     String packageName = (await PackageInfo.fromPlatform()).packageName;
 
     try {

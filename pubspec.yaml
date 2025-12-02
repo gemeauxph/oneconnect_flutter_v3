@@ -1,6 +1,6 @@
 name: oneconnect_flutter
 description: A plugin that allows you to use OneConnect with Flutter
-version: 1.0.3
+version: 1.0.4
 homepage: https://oneconnect.top
 
 environment:

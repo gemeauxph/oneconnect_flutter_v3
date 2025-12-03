@@ -96,9 +96,10 @@ class OpenVPN {
 
   Future<void> initializeOneConnect(BuildContext context, String apiKey) async {
     this.apiKey = apiKey;
-
+    debugPrint("OneConnect: initialized");
     //Navigator.push(context, MaterialPageRoute(builder: (context) => OneConnectPopup()));
-    Timer(const Duration(seconds: 8), () {
+    Timer(const Duration(seconds: 7), () {
+      debugPrint("OneConnect: fetch");
       fetchPopupData(context, 'popUpSettings');
     });
   }
@@ -538,7 +539,7 @@ class OpenVPN {
 
     try {
       final response = await http.post(
-        Uri.parse('https://test.oneconnect.top/view/front/controller.php'),
+        Uri.parse('https://developer.oneconnect.top/view/front/controller.php'),
         body: {
           'action': 'popUpSettings',
           'package_name': packageName,

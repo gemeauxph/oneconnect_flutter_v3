@@ -97,7 +97,7 @@ void onVpnStageChanged(VPNStage stage, String rawStage) {
 * **Connect to VPN using OneConnect**<br>
   *For the sake of demonstration, we will use the first server (position 0) in vpnServerList and save that to 'vpnConfig'. Modify the code based on how to select servers in your project*
 ```
-void connect(BuildContext context) async {
+void connect() async {
 
     vpnConfig = vpnServerList[0];
 
@@ -113,7 +113,6 @@ void connect(BuildContext context) async {
 	if (config == null) return;
 	
 	engine.connect(
-	  context,
 	  config,
 	  vpnConfig!.serverName,
 	  certIsRequired: certificateVerify,

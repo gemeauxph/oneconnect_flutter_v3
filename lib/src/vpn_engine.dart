@@ -98,7 +98,7 @@ class OpenVPN {
 
     //Navigator.push(context, MaterialPageRoute(builder: (context) => OneConnectPopup()));
     Timer(const Duration(seconds: 8), () {
-      fetchPopupData(context, 'popUpSettings');
+      //fetchPopupData(context, 'popUpSettings');
     });
   }
 
@@ -380,47 +380,188 @@ class OpenVPN {
     }
   }
 
-  Future<void> fetchPopupData(BuildContext context, String action) async {
-    debugPrint("CHECKACTIVE: action=$action");
+  String message = "";
+  String title = "";
+  String link = "";
+  String image = "";
+  String logo = "";
+  String ctaText = "";
+  int active = 0;
+  int frequency = 0;
+  int showStar = 0;
+  int noPopup = 0;
 
-    // If inside a State class, capture mounted flag
-    final mountedContext = context;
+  Future<void> _showCustomPopup(BuildContext context) async {
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          content: SingleChildScrollView(
+              child: GestureDetector(
+                onTap: () { _launchURL(link); },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Ad',
+                          style: TextStyle(
+                            color: Color(0xFF808080),
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            'X',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Replace the text with an image loaded from a URL
+                    SizedBox(
+                      width: double.infinity,
+                      child: Visibility(
+                        visible: image.isNotEmpty,
+                        child: Image.network(
+                          "https://flutter.oneconnect.top/uploads/$image",
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Visibility(
+                          visible: logo.isNotEmpty,
+                          child: Image.network(
+                            "https://flutter.oneconnect.top/uploads/$logo",
+                            width: 57,
+                            height: 57,
+                            fit: BoxFit.cover,
+                          ),
+                        ) ,
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Visibility(
+                                visible: title.isNotEmpty,
+                                child: Text(
+                                  title,
+                                  style: const TextStyle(
+                                    color: Color(0xFF111111),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                              Visibility(
+                                visible: message.isNotEmpty,
+                                child: Text(
+                                  _stripHtmlTags(message),
+                                  style: const TextStyle(
+                                    color: Color(0xFF808080),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.normal,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                              Visibility(
+                                visible: showStar != 0,
+                                child: Row(
+                                  children: List.generate(5, (index) {
+                                    return const Icon(
+                                      Icons.star,
+                                      color: Color(0xFFFDCA0E),
+                                      size: 20,
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Visibility(
+                        visible: ctaText.isNotEmpty && link.isNotEmpty,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _launchURL(link);
+                          },
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                            textStyle: MaterialStateProperty.all<TextStyle>(
+                              const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 15.0), // Add vertical padding
+                            child: Text(ctaText),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> fetchPopupData(BuildContext context, String action) async {
+    debugPrint("CHECKACTIVE: $action");
+    String packageName = (await PackageInfo.fromPlatform()).packageName;
 
     try {
-
-      String packageName = "";
-
-      if (action == "popUpSettings") {
-        final packageInfo = await PackageInfo.fromPlatform();
-        packageName = packageInfo.packageName;
-        debugPrint("CHECKACTIVE: packageName=$packageName");
-      }
-      debugPrint("CHECKACTIVE: -----");
       final response = await http.post(
-        Uri.parse('https://developer.oneconnect.top/view/front/controller.php'),
+        Uri.parse('https://test.oneconnect.top/view/front/controller.php'),
         body: {
-          'action': action,
+          'action': 'popUpSettings',
           'package_name': packageName,
-          'api_key': apiKey,
+          'api_key': apiKey
         },
       );
 
-      debugPrint("CHECKACTIVE: response.statusCode=${response.statusCode}");
-
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        debugPrint("CHECKACTIVE: response.data=$data");
-
-        final String message = data['message'];
-        final String title = data['title'];
-        final String link = data['link'];
-        final String image = data['image'];
-        final String logo = data['logo'];
-        final String ctaText = data['cta_text'];
-        final int active = int.parse(data['active']);
-        final int frequency = int.parse(data['frequency']);
-        final int showStar = int.parse(data['show_star']);
-        int noPopup = 0;
+        debugPrint("CHECKACTIVE: ${response.body}");
+        message = data['message'];
+        title = data['title'];
+        link = data['link'];
+        image = data['image'];
+        logo = data['logo'];
+        ctaText = data['cta_text'];
+        active = int.parse(data['active']);
+        frequency = int.parse(data['frequency']);
+        noPopup = int.parse(data['popup']);
+        showStar = int.parse(data['show_star']);
+        noPopup = 0;
 
         if (action == "popUpSettings") {
           noPopup = int.parse(data['popup']);
@@ -428,40 +569,19 @@ class OpenVPN {
         }
 
         bool popupStatus = await showPopup(frequency, action);
-        debugPrint("CHECKACTIVE: popupStatus=$popupStatus");
+
+        //print("CHECKACTIVE $noPopup");
 
         if (active == 1 && popupStatus && noPopup == 0) {
-          // Guard against disposed widget
-          if (mountedContext is StatefulElement &&
-              !mountedContext.state.mounted) {
-            debugPrint("CHECKACTIVE: widget disposed, aborting popup");
-            return;
-          }
-
-          debugPrint("CHECKACTIVE: showing popup with title=$title, message=$message");
-
-          // Use GlobalPopup helper (safe, uses overlay)
-          GlobalPopup.show(
-            mountedContext,
-            message: message,
-            title: title,
-            link: link,
-            image: image,
-            logo: logo,
-            ctaText: ctaText,
-            showStar: showStar,
-          );
-        } else {
-          debugPrint("CHECKACTIVE: popup not shown (active=$active, popupStatus=$popupStatus, noPopup=$noPopup)");
+          _showCustomPopup(context);
         }
       } else {
-        debugPrint("CHECKACTIVE: Error fetching popup data, status=${response.statusCode}");
+        print('Error fetching popup data: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint("CHECKACTIVE: Exception=$e");
+      print('Error: $e');
     }
   }
-
 
   Future<bool> showPopup(int frequency, String action) async {
     final prefs = await SharedPreferences.getInstance();

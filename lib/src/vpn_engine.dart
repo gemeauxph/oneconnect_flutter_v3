@@ -41,7 +41,7 @@ enum VPNStage {
 
 class OpenVPN {
 
-  final BuildContext context;
+  final BuildContext? context;
 
   ///Channel's names of _vpnStageSnapshot
   static const String _eventChannelVpnStage =
@@ -83,7 +83,7 @@ class OpenVPN {
   /// OpenVPN's Constructions, don't forget to implement the listeners
   /// onVpnStatusChanged is a listener to see vpn status detail
   /// onVpnStageChanged is a listener to see what stage the connection was
-  OpenVPN({required this.context, this.onVpnStatusChanged, this.onVpnStageChanged});
+  OpenVPN({this.context, this.onVpnStatusChanged, this.onVpnStageChanged});
 
   ///This function should be called before any usage of OpenVPN
   ///All params required for iOS, make sure you read the plugin's documentation
@@ -113,9 +113,11 @@ class OpenVPN {
     Function(VPNStage stage)? lastStage,
   }) async {
 
-    Timer(const Duration(seconds: 5), () {
-      fetchPopupData(context, 'popUpSettingsOnConnect');
-    });
+    if (context != null) {
+      Timer(const Duration(seconds: 5), () {
+        fetchPopupData(context!, 'popUpSettingsOnConnect');
+      });
+    }
 
     if (Platform.isIOS) {
       assert(

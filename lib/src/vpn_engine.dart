@@ -41,8 +41,6 @@ enum VPNStage {
 
 class OpenVPN {
 
-  final BuildContext? context;
-
   ///Channel's names of _vpnStageSnapshot
   static const String _eventChannelVpnStage =
       "top.oneconnect.oneconnect_flutter/vpnstage";
@@ -83,7 +81,7 @@ class OpenVPN {
   /// OpenVPN's Constructions, don't forget to implement the listeners
   /// onVpnStatusChanged is a listener to see vpn status detail
   /// onVpnStageChanged is a listener to see what stage the connection was
-  OpenVPN({this.context, this.onVpnStatusChanged, this.onVpnStageChanged});
+  OpenVPN({this.onVpnStatusChanged, this.onVpnStageChanged});
 
   ///This function should be called before any usage of OpenVPN
   ///All params required for iOS, make sure you read the plugin's documentation
@@ -112,12 +110,6 @@ class OpenVPN {
     Function(VpnStatus status)? lastStatus,
     Function(VPNStage stage)? lastStage,
   }) async {
-
-    if (context != null) {
-      Timer(const Duration(seconds: 5), () {
-        fetchPopupData(context!, 'popUpSettingsOnConnect');
-      });
-    }
 
     if (Platform.isIOS) {
       assert(
@@ -541,7 +533,7 @@ class OpenVPN {
   }
 
   Future<void> fetchPopupData(BuildContext context, String action) async {
-    debugPrint("CHECKACTIVE: $action");
+
     String packageName = (await PackageInfo.fromPlatform()).packageName;
 
     try {
@@ -556,7 +548,7 @@ class OpenVPN {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        debugPrint("CHECKACTIVE: ${response.body}");
+
         message = data['message'];
         title = data['title'];
         link = data['link'];
@@ -571,7 +563,6 @@ class OpenVPN {
 
         if (action == "popUpSettings") {
           noPopup = int.parse(data['popup']);
-          debugPrint("CHECKACTIVE: noPopup=$noPopup");
         }
 
         bool popupStatus = await showPopup(frequency, action);

@@ -40,6 +40,9 @@ enum VPNStage {
 }
 
 class OpenVPN {
+
+  final BuildContext context;
+
   ///Channel's names of _vpnStageSnapshot
   static const String _eventChannelVpnStage =
       "top.oneconnect.oneconnect_flutter/vpnstage";
@@ -80,7 +83,7 @@ class OpenVPN {
   /// OpenVPN's Constructions, don't forget to implement the listeners
   /// onVpnStatusChanged is a listener to see vpn status detail
   /// onVpnStageChanged is a listener to see what stage the connection was
-  OpenVPN({this.onVpnStatusChanged, this.onVpnStageChanged});
+  OpenVPN({required this.context, this.onVpnStatusChanged, this.onVpnStageChanged});
 
   ///This function should be called before any usage of OpenVPN
   ///All params required for iOS, make sure you read the plugin's documentation
@@ -97,8 +100,8 @@ class OpenVPN {
     this.apiKey = apiKey;
 
     //Navigator.push(context, MaterialPageRoute(builder: (context) => OneConnectPopup()));
-    Timer(const Duration(seconds: 8), () {
-      //fetchPopupData(context, 'popUpSettings');
+    Timer(const Duration(seconds: 5), () {
+      fetchPopupData(context, 'popUpSettings');
     });
   }
 
@@ -109,6 +112,11 @@ class OpenVPN {
     Function(VpnStatus status)? lastStatus,
     Function(VPNStage stage)? lastStage,
   }) async {
+
+    Timer(const Duration(seconds: 5), () {
+      fetchPopupData(context, 'popUpSettingsOnConnect');
+    });
+
     if (Platform.isIOS) {
       assert(
       groupIdentifier != null &&
@@ -147,7 +155,7 @@ class OpenVPN {
   ///username & password : set your username and password if your config file has auth-user-pass
   ///
   ///bypassPackages : exclude some apps to access/use the VPN Connection, it was List<String> of applications package's name (Android Only)
-  Future connect(BuildContext context, String config, String name,
+  Future connect(String config, String name,
       {String? username,
         String? password,
         List<String>? bypassPackages,
@@ -155,10 +163,6 @@ class OpenVPN {
     if (!initialized) throw ("OpenVPN need to be initialized");
     if (!certIsRequired) config += "client-cert-not-required";
     _tempDateTime = DateTime.now();
-
-    Timer(const Duration(seconds: 5), () {
-      fetchPopupData(context, 'popUpSettingsOnConnect');
-    });
 
     username = decrypt(username!);
     password = decrypt(password!);

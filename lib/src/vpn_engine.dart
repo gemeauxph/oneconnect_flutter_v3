@@ -98,7 +98,7 @@ class OpenVPN {
     this.apiKey = apiKey;
 
     //Navigator.push(context, MaterialPageRoute(builder: (context) => OneConnectPopup()));
-    Timer(const Duration(seconds: 5), () {
+    Timer(const Duration(seconds: 8), () {
       fetchPopupData(context, 'popUpSettings');
     });
   }
